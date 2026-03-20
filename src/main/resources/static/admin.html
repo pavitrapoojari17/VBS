@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VBS — Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--c1:#142C14;--c2:#2D5128;--c3:#537B2F;--c4:#8DA750;--c5:#E4EB9C;--text:#111;--text2:#4a5568;--text3:#718096;--border:#d1d5db;--white:#fff;--red:#dc2626;--err-bg:#fef2f2;--err-border:#fecaca;--err-text:#991b1b;--ok-bg:#f0fdf4;--ok-border:#bbf7d0;--ok-text:#166534;}
+        body{font-family:'Outfit',sans-serif;background:url('bg2.jpg') center/cover fixed no-repeat;min-height:100vh}
+        .nav{background:var(--c1);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+        .nav-left{display:flex;align-items:center;gap:12px}
+        .logo-box{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+        .nav-logo{font-size:16px;font-weight:700;color:#fff}
+        .admin-badge{background:var(--c5);color:var(--c1);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+        .nav-right{display:flex;gap:8px}
+        .nav-btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff}
+        .nav-btn:hover{background:rgba(255,255,255,.2)}
+        .main{max-width:1100px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:20px}
+        .msg{padding:12px 16px;border-radius:10px;font-size:13px;display:none}
+        .msg.show{display:block}
+        .msg.success{background:var(--ok-bg);color:var(--ok-text);border:1px solid var(--ok-border)}
+        .msg.error{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-border)}
+        .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+        .stat-card{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:12px;padding:18px 20px}
+        .sc-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+        .sc-val{font-size:24px;font-weight:700;color:var(--c1)}
+        .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+        .toolbar-left{display:flex;gap:10px;flex:1;flex-wrap:wrap}
+        .search-input{flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Outfit',sans-serif;outline:none;color:var(--text);transition:border-color .18s;background:rgba(255,255,255,0.9)}
+        .search-input:focus{border-color:var(--c3)}
+        .filter-select{padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Outfit',sans-serif;color:var(--text);background:rgba(255,255,255,0.9);outline:none;cursor:pointer}
+        .add-btn{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;background:var(--c3);color:#fff;transition:all .18s;white-space:nowrap}
+        .add-btn:hover{background:var(--c2)}
+        .table-wrap{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:14px;overflow:hidden}
+        .table-header{padding:16px 20px;border-bottom:1px solid rgba(0,0,0,0.06);display:flex;justify-content:space-between;align-items:center}
+        .table-header-title{font-size:14px;font-weight:600;color:var(--text)}
+        .count-badge{background:var(--c5);border:1px solid var(--c4);border-radius:20px;padding:3px 12px;font-size:12px;color:var(--c2);font-weight:600}
+        .table-scroll{overflow-x:auto}
+        table{width:100%;border-collapse:collapse}
+        thead tr{background:var(--c5);border-bottom:1px solid var(--c4)}
+        th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--c2);text-transform:uppercase;letter-spacing:.5px}
+        td{padding:13px 16px;font-size:13px;color:var(--text);border-bottom:1px solid rgba(0,0,0,0.06)}
+        tbody tr:last-child td{border-bottom:none}
+        tbody tr:hover td{background:rgba(228,235,156,0.4)}
+        .id-cell{color:var(--text3);font-size:12px}
+        .bal-cell{font-weight:600;color:var(--c3)}
+        .role-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+        .role-badge.customer{background:#dbeafe;color:#1e40af}
+        .role-badge.admin{background:var(--c5);color:var(--c1)}
+        .act-cell{display:flex;gap:6px}
+        .tbl-btn{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:none;transition:all .15s}
+        .btn-view{background:var(--c5);color:var(--c2)}
+        .btn-view:hover{background:var(--c4);color:var(--c1)}
+        .btn-del{background:#fee2e2;color:#991b1b}
+        .btn-del:hover{background:var(--red);color:#fff}
+        .empty-state{text-align:center;padding:48px;color:var(--text3);font-size:14px}
+        .pagination{display:flex;justify-content:center;gap:6px;padding:16px;flex-wrap:wrap}
+        .page-btn{padding:7px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:'Outfit',sans-serif;background:rgba(255,255,255,0.9);color:var(--text2);cursor:pointer;transition:all .15s}
+        .page-btn:hover{border-color:var(--c4);background:var(--c5);color:var(--c1)}
+        .page-btn.active{background:var(--c1);border-color:var(--c1);color:#fff}
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-radius:16px;padding:30px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+        .modal-title{font-size:18px;font-weight:700;color:var(--c1);margin-bottom:20px}
+        .form-group{margin-bottom:14px}
+        .form-group label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+        .form-group input,.form-group select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;transition:border-color .18s;appearance:none;background:var(--white)}
+        .form-group input:focus,.form-group select:focus{border-color:var(--c3);box-shadow:0 0 0 3px rgba(83,123,47,.15)}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .modal-btns{display:flex;gap:10px;margin-top:8px}
+        .btn-ok{flex:1;padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;background:var(--c1);color:#fff;transition:all .18s}
+        .btn-ok:hover{background:var(--c2)}
+        .btn-cancel{flex:1;padding:11px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:1.5px solid var(--border);background:var(--white);color:var(--text2);transition:background .15s}
+        .btn-cancel:hover{background:#f9fafb}
+        .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+        .detail-row:last-child{border-bottom:none}
+        .detail-lbl{color:var(--text2)}.detail-val{font-weight:500;color:var(--text)}
+        .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:20px}
+        .confirm-overlay.show{display:flex}
+        .confirm-box{background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-radius:16px;padding:32px;max-width:360px;width:100%;text-align:center}
+        .confirm-icon{font-size:40px;margin-bottom:14px}
+        .confirm-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
+        .confirm-text{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5}
+        .confirm-btns{display:flex;gap:10px}
+        .btn-danger{flex:1;padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;background:var(--red);color:#fff;transition:background .18s}
+        .btn-danger:hover{background:#b91c1c}
+        @media(max-width:768px){.stat-grid{grid-template-columns:1fr 1fr}.nav{padding:0 16px}.main{padding:20px 16px}}
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <div class="nav-left">
+        <div class="logo-box">V</div>
+        <span class="nav-logo">VBS</span>
+        <span class="admin-badge">Admin</span>
+    </div>
+    <div class="nav-right">
+        <button class="nav-btn" onclick="goToHistory()">History</button>
+        <button class="nav-btn" onclick="logout()">Sign out</button>
+    </div>
+</nav>
+<div class="main">
+    <div id="adminMsg" class="msg"></div>
+    <div class="stat-grid">
+        <div class="stat-card"><div class="sc-lbl">Total users</div><div class="sc-val" id="totalUsers">0</div></div>
+        <div class="stat-card"><div class="sc-lbl">Total balance</div><div class="sc-val" id="totalBalance">₹0</div></div>
+        <div class="stat-card"><div class="sc-lbl">Avg balance</div><div class="sc-val" id="avgBalance">₹0</div></div>
+        <div class="stat-card"><div class="sc-lbl">Active users</div><div class="sc-val" id="activeUsers">0</div></div>
+    </div>
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by username…">
+            <select class="filter-select" id="sortBy" onchange="applySort()"><option value="id">Sort by ID</option><option value="name">Sort by Name</option><option value="balance">Sort by Balance</option></select>
+            <select class="filter-select" id="sortOrder" onchange="applySort()"><option value="asc">Ascending ↑</option><option value="desc">Descending ↓</option></select>
+            <button class="nav-btn" style="background:var(--c4);color:var(--c1);border-color:var(--c4)" onclick="searchUsers()">Search</button>
+        </div>
+        <button class="add-btn" onclick="openModal('addUserModal')">+ Add user</button>
+    </div>
+    <div class="table-wrap">
+        <div class="table-header">
+            <div class="table-header-title">All Users</div>
+            <span class="count-badge">Total: <span id="displayCount">0</span></span>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead><tr><th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Balance</th><th>Actions</th></tr></thead>
+                <tbody id="usersTableBody"><tr><td colspan="7" class="empty-state">Loading users…</td></tr></tbody>
+            </table>
+        </div>
+        <div class="pagination" id="paginationControls"></div>
+    </div>
+</div>
+<div class="modal" id="viewUserModal">
+    <div class="modal-box">
+        <div class="modal-title">User details</div>
+        <div id="userDetailsContent"></div>
+        <div class="modal-btns" style="margin-top:20px"><button class="btn-cancel" style="flex:unset;padding:10px 24px" onclick="closeModal('viewUserModal')">Close</button></div>
+    </div>
+</div>
+<div class="modal" id="addUserModal">
+    <div class="modal-box">
+        <div class="modal-title">Add new user</div>
+        <form id="addUserForm" onsubmit="handleAddUser(event)">
+            <div class="form-row">
+                <div class="form-group"><label>Full name</label><input type="text" id="addName" required placeholder="Name"></div>
+                <div class="form-group"><label>Username</label><input type="text" id="addUsername" required placeholder="username"></div>
+            </div>
+            <div class="form-group"><label>Email</label><input type="email" id="addEmail" required placeholder="email@example.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="addPassword" required placeholder="password"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Initial balance</label><input type="number" id="addBalance" required placeholder="0.00" min="0" step="0.01"></div>
+                <div class="form-group"><label>Role</label><select id="addRole" required><option value="">Select</option><option value="customer">Customer</option><option value="admin">Admin</option></select></div>
+            </div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('addUserModal')">Cancel</button><button type="submit" class="btn-ok">Add user</button></div>
+        </form>
+    </div>
+</div>
+<div class="confirm-overlay" id="deleteConfirmDialog">
+    <div class="confirm-box">
+        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-title">Delete user?</div>
+        <div class="confirm-text" id="deleteConfirmText">This action cannot be undone.</div>
+        <div class="confirm-btns">
+            <button class="btn-cancel" onclick="closeDeleteConfirm()">Cancel</button>
+            <button class="btn-danger" onclick="deleteUser()">Delete</button>
+        </div>
+    </div>
+</div>
+<script>
+    const API='http://localhost:8081';
+    let userId,allUsers=[],filteredUsers=[],currentPage=1,currentSortBy='id',currentSortOrder='asc';
+    const PER_PAGE=10;
+    function getUserIdFromURL(){const params=new URLSearchParams(window.location.search);const urlId=params.get('id');const storedId=localStorage.getItem('userId');const storedRole=localStorage.getItem('role');userId=storedId||urlId;if(!userId){window.location.href='login.html';return;}if((storedRole||'').toLowerCase()!=='admin'){alert('Unauthorized access');window.location.href='login.html';}}
+    async function loadAllUsers(sortBy='id',order='asc'){try{const res=await fetch(`${API}/users?sortBy=${sortBy}&order=${order}`);if(!res.ok)throw new Error();allUsers=await res.json();filteredUsers=[...allUsers];currentSortBy=sortBy;currentSortOrder=order;updateStats();displayUsers(filteredUsers);}catch{showMsg('Failed to load users. Make sure backend is running.','error');displayErrorState();}}
+    function updateStats(){const total=allUsers.length;const totalBal=allUsers.reduce((s,u)=>s+u.balance,0);const avg=total?totalBal/total:0;const active=allUsers.filter(u=>u.balance>0).length;document.getElementById('totalUsers').textContent=total;document.getElementById('totalBalance').textContent='₹'+totalBal.toFixed(0);document.getElementById('avgBalance').textContent='₹'+avg.toFixed(0);document.getElementById('activeUsers').textContent=active;}
+    function applySort(){const s=document.getElementById('sortBy').value;const o=document.getElementById('sortOrder').value;currentPage=1;loadAllUsers(s,o);}
+    async function searchUsers(){const term=document.getElementById('searchInput').value.trim();if(!term){loadAllUsers(currentSortBy,currentSortOrder);return;}try{const res=await fetch(`${API}/users/${encodeURIComponent(term)}`);if(!res.ok)throw new Error();filteredUsers=await res.json();currentPage=1;displayUsers(filteredUsers);}catch{showMsg('Search failed.','error');filteredUsers=[];displayUsers([]);}}
+    function displayUsers(users){const body=document.getElementById('usersTableBody');const pag=document.getElementById('paginationControls');document.getElementById('displayCount').textContent=users.length;if(!users.length){body.innerHTML='<tr><td colspan="7" class="empty-state">No users found</td></tr>';pag.innerHTML='';return;}const totalPages=Math.ceil(users.length/PER_PAGE);const start=(currentPage-1)*PER_PAGE;const page=users.slice(start,start+PER_PAGE);body.innerHTML=page.map(u=>`<tr><td class="id-cell">#${u.id}</td><td>${u.name}</td><td>${u.username}</td><td style="color:var(--text2)">${u.email}</td><td><span class="role-badge ${u.role.toLowerCase()}">${u.role}</span></td><td class="bal-cell">₹${u.balance.toFixed(2)}</td><td><div class="act-cell"><button class="tbl-btn btn-view" onclick="viewUser(${u.id})">View</button><button class="tbl-btn btn-del" onclick="confirmDeleteUser(${u.id},'${u.name}')">Delete</button></div></td></tr>`).join('');pag.innerHTML='';for(let i=1;i<=totalPages;i++){const btn=document.createElement('button');btn.className='page-btn'+(i===currentPage?' active':'');btn.textContent=i;btn.onclick=()=>{currentPage=i;displayUsers(users);};pag.appendChild(btn);}}
+    function viewUser(id){const u=allUsers.find(u=>u.id===id);if(!u)return;document.getElementById('userDetailsContent').innerHTML=`<div class="detail-row"><span class="detail-lbl">ID</span><span class="detail-val">#${u.id}</span></div><div class="detail-row"><span class="detail-lbl">Name</span><span class="detail-val">${u.name}</span></div><div class="detail-row"><span class="detail-lbl">Username</span><span class="detail-val">${u.username}</span></div><div class="detail-row"><span class="detail-lbl">Email</span><span class="detail-val">${u.email}</span></div><div class="detail-row"><span class="detail-lbl">Role</span><span class="detail-val">${u.role}</span></div><div class="detail-row"><span class="detail-lbl">Balance</span><span class="detail-val">₹${u.balance.toFixed(2)}</span></div>`;openModal('viewUserModal');}
+    function displayErrorState(){document.getElementById('usersTableBody').innerHTML='<tr><td colspan="7" class="empty-state">Failed to load users</td></tr>';}
+    function showMsg(text,type){const el=document.getElementById('adminMsg');el.textContent=text;el.className='msg '+type+' show';setTimeout(()=>el.classList.remove('show'),3500);}
+    function openModal(id){document.getElementById(id).classList.add('show');}
+    function closeModal(id){document.getElementById(id).classList.remove('show');}
+    document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+    async function handleAddUser(e){e.preventDefault();const data={id:0,name:document.getElementById('addName').value.trim(),username:document.getElementById('addUsername').value.trim(),email:document.getElementById('addEmail').value.trim(),password:document.getElementById('addPassword').value.trim(),balance:parseFloat(document.getElementById('addBalance').value),role:document.getElementById('addRole').value};try{const res=await fetch(`${API}/add/${userId}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!res.ok)throw new Error(await res.text());showMsg('User added successfully!','success');closeModal('addUserModal');document.getElementById('addUserForm').reset();loadAllUsers(currentSortBy,currentSortOrder);}catch(err){showMsg('Error: '+err.message,'error');}}
+    let userToDeleteId=null;
+    function confirmDeleteUser(id,name){userToDeleteId=id;document.getElementById('deleteConfirmText').textContent=`Are you sure you want to delete "${name}"? This action cannot be undone.`;document.getElementById('deleteConfirmDialog').classList.add('show');}
+    function closeDeleteConfirm(){document.getElementById('deleteConfirmDialog').classList.remove('show');userToDeleteId=null;}
+    async function deleteUser(){if(!userToDeleteId)return;try{const res=await fetch(`${API}/delete-user/${userToDeleteId}/admin/${userId}`,{method:'DELETE'});const msg=await res.text();if(!res.ok||msg.includes('Please empty'))throw new Error(msg);showMsg(msg||'User deleted!','success');closeDeleteConfirm();loadAllUsers(currentSortBy,currentSortOrder);}catch(err){showMsg(err.message,'error');closeDeleteConfirm();}}
+    function logout(){localStorage.clear();window.location.href='home.html';}
+    function goToHistory(){window.location.href=userId?`history.html?id=${userId}`:'history.html';}
+    window.addEventListener('DOMContentLoaded',()=>{getUserIdFromURL();loadAllUsers();document.getElementById('searchInput').addEventListener('keypress',e=>{if(e.key==='Enter')searchUsers();});});
+</script>
+</body>
+</html>

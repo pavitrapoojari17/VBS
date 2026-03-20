@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VBS — Passbook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{--c1:#142C14;--c2:#2D5128;--c3:#537B2F;--c4:#8DA750;--c5:#E4EB9C;--text:#111;--text2:#4a5568;--text3:#718096;--border:#d1d5db;--white:#fff;--red:#dc2626;}
+    body{font-family:'Outfit',sans-serif;background:url('bg2.jpg') center/cover fixed no-repeat;min-height:100vh}
+    .nav{background:var(--c1);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .nav-left{display:flex;align-items:center;gap:12px}
+    .logo-box{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+    .nav-logo{font-size:16px;font-weight:700;color:#fff}
+    .nav-right{display:flex;gap:8px}
+    .nav-btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff}
+    .nav-btn:hover{background:rgba(255,255,255,.2)}
+    .main{max-width:960px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:20px}
+    .balance-strip{background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:14px;padding:22px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    .bs-label{font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+    .bs-amount{font-size:30px;font-weight:700;color:#fff;letter-spacing:-1px}
+    .bs-count{font-size:13px;color:rgba(255,255,255,.5)}
+    /* FILTER PANEL */
+    .filter-panel{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:14px;padding:18px 20px}
+    .filter-title{font-size:13px;font-weight:600;color:var(--c1);margin-bottom:14px}
+    .filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+    .filter-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+    .filter-group label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+    .filter-group input,.filter-group select{padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Outfit',sans-serif;color:var(--text);background:var(--white);outline:none;transition:border-color .18s}
+    .filter-group input:focus,.filter-group select:focus{border-color:var(--c3)}
+    .filter-btns{display:flex;gap:8px;align-items:flex-end}
+    .filter-apply{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;background:var(--c1);color:#fff;transition:all .18s}
+    .filter-apply:hover{background:var(--c2)}
+    .filter-reset{padding:9px 14px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:1.5px solid var(--border);background:var(--white);color:var(--text2);transition:background .15s}
+    .filter-reset:hover{background:var(--c5)}
+    /* STATS BAR */
+    .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .stat-pill{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:10px;padding:12px 16px;text-align:center}
+    .sp-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+    .sp-val{font-size:18px;font-weight:700;color:var(--text)}
+    .sp-val.green{color:var(--c3)}
+    .sp-val.red{color:var(--red)}
+    /* TABLE */
+    .table-wrap{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:14px;overflow:hidden}
+    .pb-table{width:100%;border-collapse:collapse}
+    .pb-table thead tr{background:var(--c5);border-bottom:1px solid var(--c4)}
+    .pb-table th{padding:13px 18px;text-align:left;font-size:11px;font-weight:600;color:var(--c2);text-transform:uppercase;letter-spacing:.6px}
+    .pb-table td{padding:13px 18px;font-size:13px;color:var(--text);border-bottom:1px solid rgba(0,0,0,0.05)}
+    .pb-table tbody tr:last-child td{border-bottom:none}
+    .pb-table tbody tr:hover td{background:rgba(228,235,156,0.4)}
+    .tx-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;vertical-align:middle}
+    .tx-dot.credit{background:var(--c3)}
+    .tx-dot.debit{background:var(--red)}
+    .tx-dot.transfer{background:#3b82f6}
+    .amt-credit{font-weight:600;color:var(--c3)}
+    .amt-debit{font-weight:600;color:var(--red)}
+    .note-tag{display:inline-block;background:var(--c5);color:var(--c2);font-size:10px;padding:2px 8px;border-radius:10px;margin-top:3px}
+    .bal-cell{color:var(--text3);font-size:12px}
+    .date-cell{color:var(--text3);font-size:12px;white-space:nowrap}
+    .empty-row td{text-align:center;padding:48px;color:var(--text3);font-size:14px}
+    .result-count{font-size:12px;color:var(--text3);padding:10px 18px;border-bottom:1px solid rgba(0,0,0,0.05)}
+    .pagination{display:flex;justify-content:center;gap:6px;padding:16px;flex-wrap:wrap}
+    .page-btn{padding:7px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:'Outfit',sans-serif;background:rgba(255,255,255,0.9);color:var(--text2);cursor:pointer;transition:all .15s}
+    .page-btn:hover{border-color:var(--c4);color:var(--c2);background:var(--c5)}
+    .page-btn.active{background:var(--c1);border-color:var(--c1);color:#fff}
+    @media(max-width:600px){.nav{padding:0 16px}.main{padding:20px 16px}.pb-table th:nth-child(3),.pb-table td:nth-child(3){display:none}.stats-bar{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-left"><div class="logo-box">V</div><span class="nav-logo">VBS</span></div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+    <button class="nav-btn" onclick="logout()">Sign out</button>
+  </div>
+</nav>
+<div class="main">
+  <!-- BALANCE -->
+  <div class="balance-strip">
+    <div><div class="bs-label">Current balance</div><div class="bs-amount">₹ <span id="currentBalance">0.00</span></div></div>
+    <div class="bs-count" id="txTotalCount">0 transactions</div>
+  </div>
+
+  <!-- FILTER PANEL -->
+  <div class="filter-panel">
+    <div class="filter-title">🔍 Filter transactions</div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="searchInput" placeholder="Description or note…" oninput="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Type</label>
+        <select id="typeFilter" onchange="applyFilters()">
+          <option value="all">All types</option>
+          <option value="credit">Credits only</option>
+          <option value="debit">Debits only</option>
+          <option value="transfer">Transfers only</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From date</label>
+        <input type="date" id="dateFrom" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>To date</label>
+        <input type="date" id="dateTo" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Min amount (₹)</label>
+        <input type="number" id="minAmount" placeholder="0" min="0" oninput="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Max amount (₹)</label>
+        <input type="number" id="maxAmount" placeholder="Any" min="0" oninput="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label>Sort by</label>
+        <select id="sortOrder" onchange="applyFilters()">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="highest">Highest amount</option>
+          <option value="lowest">Lowest amount</option>
+        </select>
+      </div>
+      <div class="filter-btns">
+        <button class="filter-reset" onclick="resetFilters()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-pill"><div class="sp-lbl">Showing</div><div class="sp-val" id="statShowing">0</div></div>
+    <div class="stat-pill"><div class="sp-lbl">Total in</div><div class="sp-val green" id="statIn">₹0</div></div>
+    <div class="stat-pill"><div class="sp-lbl">Total out</div><div class="sp-val red" id="statOut">₹0</div></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="result-count" id="resultCount">Showing all transactions</div>
+    <table class="pb-table">
+      <thead><tr><th>Description</th><th>Amount</th><th>Balance after</th><th>Date</th></tr></thead>
+      <tbody id="txBody"><tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text3)">Loading…</td></tr></tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<script>
+  const API='http://localhost:8081';
+  let userId,allTxns=[],filtered=[],currentPage=1;
+  const PER_PAGE=12;
+  function validateUserAccess(){userId=localStorage.getItem('userId');if(!userId)window.location.href='login.html';}
+
+  async function loadPassbook(){try{const res=await fetch(`${API}/passbook/${userId}`);allTxns=await res.json();if(allTxns.length){const last=[...allTxns].sort((a,b)=>new Date(b.date)-new Date(a.date))[0];document.getElementById('currentBalance').textContent=last.currBalance.toFixed(2);}document.getElementById('txTotalCount').textContent=allTxns.length+' transactions';applyFilters();}catch{document.getElementById('txBody').innerHTML='<tr class="empty-row"><td colspan="4">Could not load transactions</td></tr>';}}
+
+  function getTxType(desc){const d=desc.toLowerCase();if(d.includes('deposit')||d.includes('received'))return 'credit';if(d.includes('sent')||d.includes('transfer')||d.includes('auto-pay'))return 'transfer';return 'debit';}
+
+  function applyFilters(){const search=document.getElementById('searchInput').value.toLowerCase();const typeF=document.getElementById('typeFilter').value;const dateFrom=document.getElementById('dateFrom').value;const dateTo=document.getElementById('dateTo').value;const minAmt=parseFloat(document.getElementById('minAmount').value)||0;const maxAmt=parseFloat(document.getElementById('maxAmount').value)||Infinity;const sortV=document.getElementById('sortOrder').value;
+  filtered=allTxns.filter(t=>{const type=getTxType(t.description);const matchSearch=t.description.toLowerCase().includes(search)||(t.note&&t.note.toLowerCase().includes(search));const matchType=typeF==='all'||type===typeF;const txDate=new Date(t.date);const matchFrom=!dateFrom||txDate>=new Date(dateFrom);const matchTo=!dateTo||txDate<=new Date(dateTo+'T23:59:59');const matchAmt=t.amount>=minAmt&&t.amount<=maxAmt;return matchSearch&&matchType&&matchFrom&&matchTo&&matchAmt;});
+  if(sortV==='newest')filtered.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(sortV==='oldest')filtered.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(sortV==='highest')filtered.sort((a,b)=>b.amount-a.amount);
+  if(sortV==='lowest')filtered.sort((a,b)=>a.amount-b.amount);
+  // stats
+  const totalIn=filtered.filter(t=>getTxType(t.description)==='credit').reduce((s,t)=>s+t.amount,0);
+  const totalOut=filtered.filter(t=>getTxType(t.description)!=='credit').reduce((s,t)=>s+t.amount,0);
+  document.getElementById('statShowing').textContent=filtered.length;
+  document.getElementById('statIn').textContent='₹'+totalIn.toLocaleString('en-IN',{maximumFractionDigits:0});
+  document.getElementById('statOut').textContent='₹'+totalOut.toLocaleString('en-IN',{maximumFractionDigits:0});
+  document.getElementById('resultCount').textContent=`Showing ${filtered.length} of ${allTxns.length} transactions`;
+  currentPage=1;render();}
+
+  function resetFilters(){document.getElementById('searchInput').value='';document.getElementById('typeFilter').value='all';document.getElementById('dateFrom').value='';document.getElementById('dateTo').value='';document.getElementById('minAmount').value='';document.getElementById('maxAmount').value='';document.getElementById('sortOrder').value='newest';applyFilters();}
+
+  function render(){const start=(currentPage-1)*PER_PAGE;const page=filtered.slice(start,start+PER_PAGE);const body=document.getElementById('txBody');const pagDiv=document.getElementById('pagination');if(!filtered.length){body.innerHTML='<tr class="empty-row"><td colspan="4">No transactions match your filters</td></tr>';pagDiv.innerHTML='';return;}
+  body.innerHTML=page.map(t=>{const type=getTxType(t.description);const isC=type==='credit';const sign=isC?'+':'−';const cls=isC?'amt-credit':'amt-debit';const date=new Date(t.date).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});const noteHtml=t.note?`<div><span class="note-tag">📝 ${t.note}</span></div>`:'';return`<tr><td><span class="tx-dot ${type}"></span>${t.description}${noteHtml}</td><td class="${cls}">${sign}₹${t.amount.toFixed(2)}</td><td class="bal-cell">₹${t.currBalance.toFixed(2)}</td><td class="date-cell">${date}</td></tr>`;}).join('');
+  const totalPages=Math.ceil(filtered.length/PER_PAGE);pagDiv.innerHTML='';for(let i=1;i<=totalPages;i++){const btn=document.createElement('button');btn.className='page-btn'+(i===currentPage?' active':'');btn.textContent=i;btn.onclick=()=>{currentPage=i;render();window.scrollTo(0,0);};pagDiv.appendChild(btn);}}
+
+  function logout(){localStorage.clear();window.location.href='home.html';}
+  window.addEventListener('DOMContentLoaded',()=>{validateUserAccess();loadPassbook();});
+</script>
+</body>
+</html>

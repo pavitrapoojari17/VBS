@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VBS — Create Account</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+          --c1:#142C14; --c2:#2D5128; --c3:#537B2F;
+          --c4:#8DA750; --c5:#E4EB9C;
+          --text:#111; --text2:#4a5568; --text3:#718096;
+          --border:#d1d5db; --white:#fff;
+          --err-bg:#fef2f2; --err-border:#fecaca; --err-text:#991b1b;
+          --ok-bg:#f0fdf4; --ok-border:#bbf7d0; --ok-text:#166534;
+        }
+        body{font-family:'Outfit',sans-serif;background:url('bg2.jpg') center/cover fixed no-repeat;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+        .wrap{width:100%;max-width:420px}
+        .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+        .logo-box{width:36px;height:36px;background:var(--c1);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff}
+        .logo-name{font-size:16px;font-weight:700;color:var(--c1)}
+        .card{background:rgba(255,255,255,0.88);backdrop-filter:blur(8px);border-radius:18px;border:1px solid rgba(255,255,255,0.6);padding:36px 32px;box-shadow:0 4px 24px rgba(20,44,20,.15)}
+        .card-title{font-size:22px;font-weight:700;color:var(--c1);margin-bottom:4px}
+        .card-sub{font-size:14px;color:var(--text2);margin-bottom:26px}
+        .form-group{margin-bottom:14px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+        input,select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'Outfit',sans-serif;color:var(--text);background:rgba(255,255,255,0.9);outline:none;transition:border-color .18s,box-shadow .18s;appearance:none}
+        input:focus,select:focus{border-color:var(--c3);box-shadow:0 0 0 3px rgba(83,123,47,.15)}
+        input::placeholder{color:var(--text3)}
+        .btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;background:var(--c1);color:#fff;margin-top:6px;transition:all .18s}
+        .btn:hover{background:var(--c2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(20,44,20,.25)}
+        .msg{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+        .msg.show{display:block}
+        .msg.success{background:var(--ok-bg);color:var(--ok-text);border:1px solid var(--ok-border)}
+        .msg.error{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-border)}
+        .links{margin-top:22px;display:flex;flex-direction:column;gap:8px;align-items:center}
+        .link-text{font-size:13px;color:var(--text2)}
+        .link-text a{color:var(--c3);font-weight:600;text-decoration:none;cursor:pointer}
+        .link-text a:hover{text-decoration:underline}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="logo-row">
+        <div class="logo-box">V</div>
+        <div class="logo-name">VBS</div>
+    </div>
+    <div class="card">
+        <h1 class="card-title">Create account</h1>
+        <p class="card-sub">Get started with VBS in seconds</p>
+        <div id="signupMessage" class="msg"></div>
+        <form id="signupForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full name</label>
+                    <input type="text" id="signupName" placeholder="Your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" placeholder="username" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email address</label>
+                <input type="email" id="signupEmail" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signupPassword" placeholder="Min. 8 characters" required>
+            </div>
+            <div class="form-group">
+                <label>Account type</label>
+                <select id="signupRole" required>
+                    <option value="">Select role</option>
+                    <option value="customer">Customer</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Create account</button>
+        </form>
+        <div class="links">
+            <div class="link-text">Already have an account? <a onclick="window.location.href='login.html'">Sign in</a></div>
+            <div class="link-text"><a onclick="window.location.href='home.html'">← Back to home</a></div>
+        </div>
+    </div>
+</div>
+<script>
+    function showMsg(id,text,type){const el=document.getElementById(id);el.textContent=text;el.className='msg '+type+' show';}
+    document.getElementById('signupForm').addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const d={name:document.getElementById('signupName').value,username:document.getElementById('signupUsername').value,email:document.getElementById('signupEmail').value,password:document.getElementById('signupPassword').value,role:document.getElementById('signupRole').value};
+      fetch('http://localhost:8081/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})
+      .then(r=>r.text()).then(result=>{
+        if(result==='Successfully Registered'){showMsg('signupMessage','Account created! Redirecting…','success');setTimeout(()=>window.location.href='login.html',900);}
+        else{showMsg('signupMessage',result,'error');}
+      }).catch(()=>showMsg('signupMessage','Cannot connect to server.','error'));
+    });
+</script>
+</body>
+</html>

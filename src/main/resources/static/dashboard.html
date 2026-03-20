@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VBS — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--c1:#142C14;--c2:#2D5128;--c3:#537B2F;--c4:#8DA750;--c5:#E4EB9C;--text:#111;--text2:#4a5568;--text3:#718096;--border:#d1d5db;--white:#fff;--err-bg:#fef2f2;--err-border:#fecaca;--err-text:#991b1b;--ok-bg:#f0fdf4;--ok-border:#bbf7d0;--ok-text:#166534;--red:#dc2626;}
+        body{font-family:'Outfit',sans-serif;background:url('bg2.jpg') center/cover fixed no-repeat;min-height:100vh}
+        .nav{background:var(--c1);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+        .nav-left{display:flex;align-items:center;gap:12px}
+        .logo-box{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+        .nav-logo{font-size:16px;font-weight:700;color:#fff}
+        .nav-right{display:flex;align-items:center;gap:8px}
+        .nav-username{font-size:13px;color:rgba(255,255,255,.6)}
+        .avatar{width:30px;height:30px;border-radius:50%;background:var(--c5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--c1)}
+        .nav-btn{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff}
+        .nav-btn:hover{background:rgba(255,255,255,.2)}
+        .main{max-width:960px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:20px}
+        .msg{padding:12px 16px;border-radius:10px;font-size:13px;display:none}
+        .msg.show{display:block}
+        .msg.success{background:var(--ok-bg);color:var(--ok-text);border:1px solid var(--ok-border)}
+        .msg.error{background:var(--err-bg);color:var(--err-text);border:1px solid var(--err-border)}
+        .hero{background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 100%);border-radius:16px;padding:28px 30px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+        .hero-label{font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+        .hero-amount{font-size:38px;font-weight:700;color:#fff;letter-spacing:-1.5px;line-height:1}
+        .hero-user{font-size:13px;color:rgba(255,255,255,.45);margin-top:6px}
+        .hero-chips{display:flex;gap:10px}
+        .chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 16px;text-align:center}
+        .chip-val{font-size:16px;font-weight:600;color:var(--c5)}
+        .chip-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+        .actions{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+        .act-btn{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:12px;padding:16px 8px;text-align:center;cursor:pointer;transition:all .18s}
+        .act-btn:hover{background:var(--c5);border-color:var(--c4);transform:translateY(-2px);box-shadow:0 4px 14px rgba(20,44,20,.12)}
+        .act-icon{font-size:20px;margin-bottom:6px}
+        .act-label{font-size:12px;font-weight:500;color:var(--text2)}
+        .act-btn:hover .act-label{color:var(--c1)}
+        /* TABS */
+        .tabs{display:flex;gap:8px;flex-wrap:wrap}
+        .tab{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:1.5px solid rgba(255,255,255,0.5);background:rgba(255,255,255,0.7);color:var(--text2);transition:all .15s}
+        .tab.active{background:var(--c1);color:#fff;border-color:var(--c1)}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+        /* TX LIST */
+        .section-title{font-size:14px;font-weight:600;color:var(--c1);margin-bottom:12px}
+        .tx-list{display:flex;flex-direction:column;gap:2px}
+        .tx-item{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;transition:background .15s}
+        .tx-item:hover{background:var(--c5);border-color:var(--c4)}
+        .tx-left{display:flex;align-items:center;gap:12px}
+        .tx-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+        .tx-icon.credit{background:var(--c5);color:var(--c1)}
+        .tx-icon.debit{background:#fee2e2;color:var(--red)}
+        .tx-icon.transfer{background:#dbeafe;color:#1d4ed8}
+        .tx-desc{font-size:13px;font-weight:500;color:var(--text)}
+        .tx-note{font-size:11px;color:var(--c3);margin-top:1px;font-style:italic}
+        .tx-date{font-size:11px;color:var(--text3);margin-top:2px}
+        .tx-amt{font-size:14px;font-weight:700}
+        .tx-amt.credit{color:var(--c3)}
+        .tx-amt.debit{color:var(--red)}
+        .tx-empty{text-align:center;padding:32px;color:var(--text3);font-size:14px}
+        /* FAVOURITES */
+        .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+        .fav-card{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .18s;position:relative}
+        .fav-card:hover{background:var(--c5);border-color:var(--c4);transform:translateY(-2px)}
+        .fav-avatar{width:40px;height:40px;border-radius:50%;background:var(--c2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;margin:0 auto 8px}
+        .fav-nick{font-size:13px;font-weight:600;color:var(--text)}
+        .fav-user{font-size:11px;color:var(--text3);margin-top:2px}
+        .fav-del{position:absolute;top:6px;right:8px;font-size:14px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:'Outfit',sans-serif}
+        .fav-del:hover{color:var(--red)}
+        .fav-empty{text-align:center;padding:24px;color:var(--text3);font-size:13px}
+        /* SCHEDULED */
+        .sched-list{display:flex;flex-direction:column;gap:8px}
+        .sched-item{background:rgba(255,255,255,0.88);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.6);border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+        .sched-label{font-size:14px;font-weight:600;color:var(--text)}
+        .sched-meta{font-size:12px;color:var(--text3);margin-top:2px}
+        .sched-amt{font-size:15px;font-weight:700;color:var(--c3)}
+        .sched-actions{display:flex;gap:6px}
+        .sched-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:10px}
+        .sched-badge.active{background:var(--c5);color:var(--c2)}
+        .sched-badge.paused{background:#fee2e2;color:#991b1b}
+        .s-btn{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:none;transition:all .15s}
+        .s-btn-toggle{background:var(--c5);color:var(--c2)}
+        .s-btn-toggle:hover{background:var(--c4)}
+        .s-btn-del{background:#fee2e2;color:#991b1b}
+        .s-btn-del:hover{background:var(--red);color:#fff}
+        /* MODAL */
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:20px}
+        .modal.show{display:flex}
+        .modal-box{background:rgba(255,255,255,0.97);backdrop-filter:blur(10px);border-radius:16px;padding:30px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+        .modal-title{font-size:18px;font-weight:700;color:var(--c1);margin-bottom:20px}
+        .form-group{margin-bottom:14px}
+        .form-group label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;font-family:'Outfit',sans-serif;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s;appearance:none;background:var(--white)}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--c3);box-shadow:0 0 0 3px rgba(83,123,47,.15)}
+        .form-group input::placeholder,.form-group textarea::placeholder{color:var(--text3)}
+        .form-group textarea{resize:none;height:70px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .modal-btns{display:flex;gap:10px;margin-top:6px}
+        .btn-ok{flex:1;padding:12px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;border:none;background:var(--c1);color:#fff;transition:all .18s}
+        .btn-ok:hover{background:var(--c2)}
+        .btn-cancel{flex:1;padding:12px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:1.5px solid var(--border);background:var(--white);color:var(--text2);transition:background .15s}
+        .btn-cancel:hover{background:#f9fafb}
+        .fav-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+        .fav-pick-btn{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;border:1.5px solid var(--c4);background:var(--c5);color:var(--c1);transition:all .15s}
+        .fav-pick-btn:hover{background:var(--c4);color:#fff}
+        .fav-pick-label{font-size:12px;color:var(--text3);margin-bottom:6px}
+        @media(max-width:640px){.actions{grid-template-columns:repeat(3,1fr)}.hero-chips{display:none}.nav{padding:0 16px}.main{padding:20px 16px}}
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <div class="nav-left">
+        <div class="logo-box">V</div>
+        <span class="nav-logo">VBS</span>
+    </div>
+    <div class="nav-right">
+        <div class="avatar" id="avatarInitial">U</div>
+        <span class="nav-username" id="navUsername"></span>
+        <button class="nav-btn" onclick="window.location.href='analytics.html'">Analytics</button>
+        <button class="nav-btn" onclick="logout()">Sign out</button>
+    </div>
+</nav>
+
+<div class="main">
+    <div id="dashMsg" class="msg"></div>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div>
+            <div class="hero-label">Available Balance</div>
+            <div class="hero-amount">₹ <span id="balance">0.00</span></div>
+            <div class="hero-user">Account #<span id="userId">—</span></div>
+        </div>
+        <div class="hero-chips">
+            <div class="chip"><div class="chip-val" id="txCount">0</div><div class="chip-lbl">Transactions</div></div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <div class="act-btn" onclick="openModal('withdrawModal')"><div class="act-icon">↓</div><div class="act-label">Withdraw</div></div>
+        <div class="act-btn" onclick="openModal('depositModal')"><div class="act-icon">↑</div><div class="act-label">Deposit</div></div>
+        <div class="act-btn" onclick="openModal('transferModal')"><div class="act-icon">⇄</div><div class="act-label">Transfer</div></div>
+        <div class="act-btn" onclick="window.location.href='passbook.html'"><div class="act-icon">📖</div><div class="act-label">Passbook</div></div>
+        <div class="act-btn" onclick="openModal('updateModal')"><div class="act-icon">⚙️</div><div class="act-label">Settings</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('recent',this)">Recent Transactions</div>
+        <div class="tab" onclick="switchTab('favourites',this)">⭐ Favourites</div>
+        <div class="tab" onclick="switchTab('scheduled',this)">🕐 Scheduled</div>
+    </div>
+
+    <!-- RECENT -->
+    <div class="tab-content active" id="tab-recent">
+        <div class="tx-list" id="txList"><div class="tx-empty">Loading…</div></div>
+    </div>
+
+    <!-- FAVOURITES -->
+    <div class="tab-content" id="tab-favourites">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div class="section-title" style="margin-bottom:0">Favourite beneficiaries</div>
+            <button class="nav-btn" style="background:var(--c3);border-color:var(--c3);color:#fff" onclick="openModal('addFavModal')">+ Add favourite</button>
+        </div>
+        <div class="fav-grid" id="favGrid"><div class="fav-empty">No favourites yet. Add one!</div></div>
+    </div>
+
+    <!-- SCHEDULED -->
+    <div class="tab-content" id="tab-scheduled">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div class="section-title" style="margin-bottom:0">Scheduled payments</div>
+            <button class="nav-btn" style="background:var(--c3);border-color:var(--c3);color:#fff" onclick="openModal('addSchedModal')">+ Add schedule</button>
+        </div>
+        <div class="sched-list" id="schedList"><div class="tx-empty">No scheduled payments yet.</div></div>
+    </div>
+</div>
+
+<!-- WITHDRAW MODAL -->
+<div class="modal" id="withdrawModal">
+    <div class="modal-box">
+        <div class="modal-title">Withdraw funds</div>
+        <form id="withdrawForm">
+            <div class="form-group"><label>Amount (₹)</label><input type="number" id="withdrawAmount" placeholder="0.00" min="1" step="0.01" required></div>
+            <div class="form-group"><label>Note (optional)</label><textarea id="withdrawNote" placeholder="e.g. ATM withdrawal, grocery…"></textarea></div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('withdrawModal')">Cancel</button><button type="submit" class="btn-ok">Withdraw</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- DEPOSIT MODAL -->
+<div class="modal" id="depositModal">
+    <div class="modal-box">
+        <div class="modal-title">Deposit funds</div>
+        <form id="depositForm">
+            <div class="form-group"><label>Amount (₹)</label><input type="number" id="depositAmount" placeholder="0.00" min="1" step="0.01" required></div>
+            <div class="form-group"><label>Note (optional)</label><textarea id="depositNote" placeholder="e.g. Salary, freelance payment…"></textarea></div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('depositModal')">Cancel</button><button type="submit" class="btn-ok">Deposit</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- TRANSFER MODAL -->
+<div class="modal" id="transferModal">
+    <div class="modal-box">
+        <div class="modal-title">Transfer funds</div>
+        <form id="transferForm">
+            <div id="favPickSection" style="display:none">
+                <div class="fav-pick-label">Quick pick from favourites:</div>
+                <div class="fav-pick" id="favPick"></div>
+            </div>
+            <div class="form-group"><label>Recipient username</label><input type="text" id="transferUsername" placeholder="Enter username" required></div>
+            <div class="form-group"><label>Amount (₹)</label><input type="number" id="transferAmount" placeholder="0.00" min="1" step="0.01" required></div>
+            <div class="form-group"><label>Note (optional)</label><textarea id="transferNote" placeholder="e.g. Rent, lunch split…"></textarea></div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('transferModal')">Cancel</button><button type="submit" class="btn-ok">Send</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- UPDATE MODAL -->
+<div class="modal" id="updateModal">
+    <div class="modal-box">
+        <div class="modal-title">Update profile</div>
+        <form id="updateForm">
+            <div class="form-group"><label>Field</label><select id="updateKey"><option value="name">Name</option><option value="password">Password</option><option value="email">Email</option></select></div>
+            <div class="form-group"><label>New value</label><input type="text" id="updateValue" placeholder="Enter new value" required></div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('updateModal')">Cancel</button><button type="submit" class="btn-ok">Save</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- ADD FAVOURITE MODAL -->
+<div class="modal" id="addFavModal">
+    <div class="modal-box">
+        <div class="modal-title">Add favourite</div>
+        <form id="addFavForm">
+            <div class="form-group"><label>Username</label><input type="text" id="favUsername" placeholder="Their username" required></div>
+            <div class="form-group"><label>Nickname</label><input type="text" id="favNickname" placeholder="e.g. Mom, Roommate, Office" required></div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('addFavModal')">Cancel</button><button type="submit" class="btn-ok">Save</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- ADD SCHEDULED MODAL -->
+<div class="modal" id="addSchedModal">
+    <div class="modal-box">
+        <div class="modal-title">New scheduled payment</div>
+        <form id="addSchedForm">
+            <div class="form-group"><label>Label (e.g. Rent, EMI)</label><input type="text" id="schedLabel" placeholder="Payment label" required></div>
+            <div class="form-group"><label>Recipient username</label><input type="text" id="schedRecipient" placeholder="Username" required></div>
+            <div class="form-group"><label>Amount (₹)</label><input type="number" id="schedAmount" placeholder="0.00" min="1" step="0.01" required></div>
+            <div class="form-row">
+                <div class="form-group"><label>Frequency</label><select id="schedFreq"><option value="MONTHLY">Monthly</option><option value="WEEKLY">Weekly</option></select></div>
+                <div class="form-group"><label>Day of month</label><input type="number" id="schedDay" placeholder="1-28" min="1" max="28" required></div>
+            </div>
+            <div class="modal-btns"><button type="button" class="btn-cancel" onclick="closeModal('addSchedModal')">Cancel</button><button type="submit" class="btn-ok">Schedule</button></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API='http://localhost:8081';
+    let userId,role,favList=[];
+
+    function validateUserAccess(){userId=localStorage.getItem('userId');role=localStorage.getItem('role')||'customer';if(!userId){window.location.href='login.html';return;}document.getElementById('userId').textContent=userId;window.history.replaceState({},'','dashboard.html');}
+
+    async function loadDashboard(){try{const res=await fetch(`${API}/get-details/${userId}`);const data=await res.json();document.getElementById('balance').textContent=data.balance.toFixed(2);document.getElementById('navUsername').textContent=data.username;document.getElementById('avatarInitial').textContent=(data.username||'U')[0].toUpperCase();}catch{showMsg('Could not load balance.','error');}}
+
+    async function loadRecentTx(){try{const res=await fetch(`${API}/passbook/${userId}`);const txns=await res.json();document.getElementById('txCount').textContent=txns.length;const sorted=[...txns].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);if(!sorted.length){document.getElementById('txList').innerHTML='<div class="tx-empty">No transactions yet</div>';return;}document.getElementById('txList').innerHTML=sorted.map(t=>{const desc=t.description.toLowerCase();const isC=desc.includes('deposit')||desc.includes('received');const isT=desc.includes('sent')||desc.includes('transfer');const cls=isC?'credit':isT?'transfer':'debit';const icon=isC?'↑':isT?'⇄':'↓';const sign=isC?'+':'−';const date=new Date(t.date).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});const noteHtml=t.note?`<div class="tx-note">📝 ${t.note}</div>`:'';return `<div class="tx-item"><div class="tx-left"><div class="tx-icon ${cls}">${icon}</div><div><div class="tx-desc">${t.description}</div>${noteHtml}<div class="tx-date">${date}</div></div></div><div class="tx-amt ${cls}">${sign}₹${t.amount.toFixed(2)}</div></div>`;}).join('');}catch{document.getElementById('txList').innerHTML='<div class="tx-empty">Could not load transactions</div>';}}
+
+    async function loadFavourites(){try{const res=await fetch(`${API}/beneficiaries/${userId}`);favList=await res.json();if(!favList.length){document.getElementById('favGrid').innerHTML='<div class="fav-empty">No favourites yet. Add one to get started!</div>';return;}document.getElementById('favGrid').innerHTML=favList.map(f=>`<div class="fav-card" onclick="quickTransfer('${f.username}')"><button class="fav-del" onclick="event.stopPropagation();removeFav('${f.username}')">✕</button><div class="fav-avatar">${f.nickname[0].toUpperCase()}</div><div class="fav-nick">${f.nickname}</div><div class="fav-user">@${f.username}</div></div>`).join('');renderFavPick();}catch{}}
+
+    function renderFavPick(){const pick=document.getElementById('favPick');if(!favList.length){document.getElementById('favPickSection').style.display='none';return;}document.getElementById('favPickSection').style.display='block';pick.innerHTML=favList.map(f=>`<button type="button" class="fav-pick-btn" onclick="document.getElementById('transferUsername').value='${f.username}'">${f.nickname}</button>`).join('');}
+
+    function quickTransfer(username){document.getElementById('transferUsername').value=username;openModal('transferModal');}
+
+    async function removeFav(username){try{await fetch(`${API}/beneficiaries/remove/${userId}/${username}`,{method:'DELETE'});showMsg('Removed from favourites','success');loadFavourites();}catch{showMsg('Error removing','error');}}
+
+    async function loadScheduled(){try{const res=await fetch(`${API}/scheduled/${userId}`);const list=await res.json();if(!list.length){document.getElementById('schedList').innerHTML='<div class="tx-empty">No scheduled payments yet.</div>';return;}document.getElementById('schedList').innerHTML=list.map(s=>{const next=s.nextRun?new Date(s.nextRun).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—';return`<div class="sched-item"><div><div class="sched-label">${s.label} <span class="sched-badge ${s.active?'active':'paused'}">${s.active?'Active':'Paused'}</span></div><div class="sched-meta">To @${s.recipientUsername} · ${s.frequency} · Next: ${next}</div></div><div style="display:flex;align-items:center;gap:12px"><div class="sched-amt">₹${s.amount.toFixed(2)}</div><div class="sched-actions"><button class="s-btn s-btn-toggle" onclick="toggleSched(${s.id})">${s.active?'Pause':'Resume'}</button><button class="s-btn s-btn-del" onclick="deleteSched(${s.id})">Delete</button></div></div></div>`;}).join('');}catch{}}
+
+    async function toggleSched(id){try{await fetch(`${API}/scheduled/toggle/${id}`,{method:'PUT'});showMsg('Updated!','success');loadScheduled();}catch{showMsg('Error','error');}}
+    async function deleteSched(id){try{await fetch(`${API}/scheduled/delete/${id}`,{method:'DELETE'});showMsg('Deleted!','success');loadScheduled();}catch{showMsg('Error','error');}}
+
+    function switchTab(name,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='favourites')loadFavourites();if(name==='scheduled')loadScheduled();}
+
+    function showMsg(text,type){const el=document.getElementById('dashMsg');el.textContent=text;el.className='msg '+type+' show';setTimeout(()=>el.classList.remove('show'),3500);}
+    function openModal(id){document.getElementById(id).classList.add('show');if(id==='transferModal')loadFavourites();}
+    function closeModal(id){document.getElementById(id).classList.remove('show');}
+    document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+
+    document.getElementById('withdrawForm').addEventListener('submit',async e=>{e.preventDefault();try{const res=await fetch(`${API}/withdraw`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(userId),amount:parseFloat(document.getElementById('withdrawAmount').value),note:document.getElementById('withdrawNote').value||null})});const txt=await res.text();if(txt.toLowerCase().includes('withdrawal')){showMsg('Withdrawal successful!','success');closeModal('withdrawModal');document.getElementById('withdrawForm').reset();loadDashboard();loadRecentTx();}else{showMsg(txt||'Failed','error');}}catch{showMsg('Error','error');}});
+
+    document.getElementById('depositForm').addEventListener('submit',async e=>{e.preventDefault();try{const res=await fetch(`${API}/deposit`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(userId),amount:parseFloat(document.getElementById('depositAmount').value),note:document.getElementById('depositNote').value||null})});const txt=await res.text();if(txt.toLowerCase().includes('deposit')){showMsg('Deposit successful!','success');closeModal('depositModal');document.getElementById('depositForm').reset();loadDashboard();loadRecentTx();}else{showMsg(txt||'Failed','error');}}catch{showMsg('Error','error');}});
+
+    document.getElementById('transferForm').addEventListener('submit',async e=>{e.preventDefault();try{const res=await fetch(`${API}/transfer`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(userId),amount:parseFloat(document.getElementById('transferAmount').value),username:document.getElementById('transferUsername').value,note:document.getElementById('transferNote').value||null})});const txt=await res.text();if(res.ok&&txt.toLowerCase().includes('successfully')){showMsg('Transfer successful!','success');closeModal('transferModal');document.getElementById('transferForm').reset();loadDashboard();loadRecentTx();}else{showMsg(txt||'Failed','error');}}catch{showMsg('Error','error');}});
+
+    document.getElementById('updateForm').addEventListener('submit',async e=>{e.preventDefault();try{const res=await fetch(`${API}/update`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(userId),key:document.getElementById('updateKey').value,value:document.getElementById('updateValue').value})});const txt=await res.text();if(res.ok&&txt.toLowerCase().includes('successfully')){showMsg('Updated!','success');closeModal('updateModal');document.getElementById('updateForm').reset();loadDashboard();}else{showMsg(txt||'Failed','error');}}catch{showMsg('Error','error');}});
+
+    document.getElementById('addFavForm').addEventListener('submit',async e=>{e.preventDefault();try{const res=await fetch(`${API}/beneficiaries/add`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:parseInt(userId),username:document.getElementById('favUsername').value,nickname:document.getElementById('favNickname').value})});const txt=await res.text();if(txt.includes('Added')){showMsg('Added to favourites!','success');closeModal('addFavModal');document.getElementById('addFavForm').reset();loadFavourites();}else{showMsg(txt,'error');}}catch{showMsg('Error','error');}});
+
+    document.getElementById('addSchedForm').addEventListener('submit',async e=>{e.preventDefault();try{const res=await fetch(`${API}/scheduled/add`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:parseInt(userId),label:document.getElementById('schedLabel').value,recipientUsername:document.getElementById('schedRecipient').value,amount:parseFloat(document.getElementById('schedAmount').value),frequency:document.getElementById('schedFreq').value,dayOfMonth:parseInt(document.getElementById('schedDay').value)})});const txt=await res.text();if(txt.includes('created')){showMsg('Scheduled payment created!','success');closeModal('addSchedModal');document.getElementById('addSchedForm').reset();loadScheduled();}else{showMsg(txt,'error');}}catch{showMsg('Error','error');}});
+
+    function logout(){localStorage.clear();window.location.href='home.html';}
+    window.addEventListener('DOMContentLoaded',()=>{validateUserAccess();loadDashboard();loadRecentTx();});
+</script>
+</body>
+</html>
